@@ -1,4 +1,6 @@
 ocaml-monad
 ===========
 
-Monads in OCaml. Uses modules for generic monad functions.
+Replicating some common and useful monads and functors from Haskell in
+OCaml.
+

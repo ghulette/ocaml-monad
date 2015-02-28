@@ -1,45 +1,67 @@
-module type MonadDef = sig
-  type 'a t
-  val pure : 'a -> 'a t
-  val fmap : ('a -> 'b) -> 'a t -> 'b t
-  val bind : 'a t -> ('a -> 'b t) -> 'b t
-end
-
-module type Monad = sig
-  include MonadDef
+module type S = sig
+  include Functor.S
+  val return : 'a -> 'a t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  val join : 'a t t -> 'a t
-  val sequence : ('a t) list -> ('a list) t
-  val map : ('a -> 'b t) -> 'a list -> ('b list) t
-  val fold : ('a -> 'b -> 'a t) -> 'a -> 'b list -> 'a t
-  val onlyif : bool -> unit t -> unit t
 end
 
-module Make (M : MonadDef) : (Monad with type 'a t = 'a M.t) = struct
-  include M
-
-  let (>>=) = bind
+module Make (M : S) = struct
+  open M
 
   let join mmx = 
-    mmx >>= fun mx -> (mx >>= fun x -> pure x)
+    mmx >>= fun mx -> 
+    mx >>= fun x -> 
+    return x
 
   let rec sequence = function
-    | [] -> pure []
-    | m::ms -> begin
-        m >>= fun x ->
-        sequence ms >>= fun xs ->
-        pure (x::xs)
-      end
+    | [] -> return []
+    | m::ms ->
+       m >>= fun x ->
+       sequence ms >>= fun xs ->
+       return (x::xs)
 
   let map f xs = 
     sequence (List.map f xs)
 
   let rec fold f x = function
-    | [] -> pure x
-    | y::ys -> begin
-        f x y >>= fun x' ->
-        fold f x' ys
-      end
-
-  let onlyif b m = if b then m else pure ()
+    | [] -> return x
+    | y::ys ->
+       f x y >>= fun x' ->
+       fold f x' ys
 end
+
+module Failure = struct
+  include Functor.Option
+  let return x = Some x
+  let (>>=) m f = 
+    match m with
+    | Some x -> f x
+    | None -> None
+end
+
+module Notdet = struct
+  include Functor.List
+  let return x = [x]
+  let (>>=) m f = List.concat (List.map f m)
+end
+
+(*
+module LeftMonoid (M : S) (O : Monoid.S) = struct
+  type t = O.t M.t
+  let empty = M.return O.empty
+  let (<+>) m1 m2 =
+    let open M in 
+    m1 >>= fun x1 ->
+    m2 >>= fun x2 ->
+    return O.(x1 <+> x2)
+end
+
+module RightMonoid (M : S) (O : Monoid.S) = struct
+  type t = O.t M.t
+  let empty = M.return O.empty
+  let (<+>) m1 m2 =
+    let open M in  
+    m2 >>= fun x2 ->
+    m1 >>= fun x1 ->
+    return O.(x1 <+> x2)
+end
+ *)
