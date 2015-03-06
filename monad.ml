@@ -27,6 +27,13 @@ module Make (M : S) = struct
     | y::ys ->
        f x y >>= fun x' ->
        fold f x' ys
+
+  let rec filter p = function
+    | [] -> return []
+    | x::xs -> 
+       p x >>= fun flg ->
+       filter p xs >>= fun xs' ->
+       return (if flg then x::xs' else xs')
 end
 
 module Option = struct

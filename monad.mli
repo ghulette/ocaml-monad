@@ -10,6 +10,7 @@ module Make (M : S) : sig
   val sequence : 'a M.t list -> 'a list M.t
   val map : ('a -> 'b M.t) -> 'a list -> 'b list M.t
   val fold : ('a -> 'b -> 'a M.t) -> 'a -> 'b list -> 'a M.t
+  val filter : ('a -> bool M.t) -> 'a list -> 'a list M.t
 end
 
 module Option : S with type 'a t = 'a option
