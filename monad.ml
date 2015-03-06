@@ -38,30 +38,14 @@ module Failure = struct
     | None -> None
 end
 
-module Notdet = struct
+module Nondet = struct
   include Functor.List
   let return x = [x]
-  let (>>=) m f = List.concat (List.map f m)
+  let (>>=) m f = List.map f m |> List.concat
 end
 
-(*
-module LeftMonoid (M : S) (O : Monoid.S) = struct
-  type t = O.t M.t
-  let empty = M.return O.empty
-  let (<+>) m1 m2 =
-    let open M in 
-    m1 >>= fun x1 ->
-    m2 >>= fun x2 ->
-    return O.(x1 <+> x2)
+module Lazy = struct
+  include Functor.Lazy
+  let return x = lazy x
+  let (>>=) m f = Lazy.force m |> f
 end
-
-module RightMonoid (M : S) (O : Monoid.S) = struct
-  type t = O.t M.t
-  let empty = M.return O.empty
-  let (<+>) m1 m2 =
-    let open M in  
-    m2 >>= fun x2 ->
-    m1 >>= fun x1 ->
-    return O.(x1 <+> x2)
-end
- *)

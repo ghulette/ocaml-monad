@@ -12,3 +12,8 @@ module Option : S with type 'a t = 'a option = struct
   type 'a t = 'a option
   let fmap f = function None -> None | Some x -> Some (f x)
 end
+
+module Lazy : S with type 'a t = 'a Lazy.t = struct
+  type 'a t = 'a Lazy.t
+  let fmap f x = lazy (f (Lazy.force x))
+end

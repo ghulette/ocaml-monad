@@ -14,8 +14,4 @@ end
 
 module Failure : S with type 'a t = 'a option
 module Nondet : S with type 'a t = 'a list
-
-(*
-module LeftMonoid (M : S) (O : Monoid.S) : Monoid.S
-module RightMonoid (M : S) (O : Monoid.S) : Monoid.S
- *)
+module Lazy : S with type 'a t = 'a Lazy.t
