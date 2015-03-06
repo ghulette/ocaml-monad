@@ -29,7 +29,7 @@ module Make (M : S) = struct
        fold f x' ys
 end
 
-module Failure = struct
+module Option = struct
   include Functor.Option
   let return x = Some x
   let (>>=) m f = 
@@ -38,7 +38,7 @@ module Failure = struct
     | None -> None
 end
 
-module Nondet = struct
+module List = struct
   include Functor.List
   let return x = [x]
   let (>>=) m f = List.map f m |> List.concat
@@ -47,5 +47,5 @@ end
 module Lazy = struct
   include Functor.Lazy
   let return x = lazy x
-  let (>>=) m f = Lazy.force m |> f
+  let (>>=) m f = lazy (Lazy.force (f (Lazy.force m)))
 end

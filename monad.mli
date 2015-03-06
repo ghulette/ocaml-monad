@@ -12,6 +12,6 @@ module Make (M : S) : sig
   val fold : ('a -> 'b -> 'a M.t) -> 'a -> 'b list -> 'a M.t
 end
 
-module Failure : S with type 'a t = 'a option
-module Nondet : S with type 'a t = 'a list
+module Option : S with type 'a t = 'a option
+module List : S with type 'a t = 'a list
 module Lazy : S with type 'a t = 'a Lazy.t
