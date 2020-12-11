@@ -31,7 +31,7 @@ module type S = sig
   end
 end
 
-module MonadF (M : MonadDef) = struct
+module MonadF(M : MonadDef) = struct
   include M
 
   let fmap = (<$>)
@@ -95,7 +95,7 @@ module OptionDef = struct
     | _               -> None
 end
 
-module Option = MonadF (OptionDef)
+module Option = MonadF(OptionDef)
 
 module ListDef = struct
   type 'a t = 'a list
@@ -109,7 +109,7 @@ module ListDef = struct
     return (f x)
 end
 
-module List = MonadF (ListDef)
+module List = MonadF(ListDef)
 
 module LazyDef = struct
   type 'a t = 'a Lazy.t
@@ -123,3 +123,30 @@ module LazyDef = struct
 end
 
 module Lazy = MonadF(LazyDef)
+
+module type Exist = sig
+  type t
+end
+
+module ResultDef (E : Exist) = struct
+  type 'a t = ('a, E.t) result
+
+  let return x = Ok x
+
+  let (<$>) f m =
+    match m with
+    | Ok x -> Ok (f x)
+    | Error e -> Error e
+
+  let (>>=) m f =
+    match m with
+    | Ok x -> f x
+    | Error e -> Error e
+
+  let (<*>) lf lx =
+    lf >>= fun f ->
+    lx >>= fun x ->
+    return (f x)
+end
+
+module Result(E:Exist) = MonadF(ResultDef(E))
