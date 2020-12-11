@@ -7,8 +7,7 @@ bug-reports: "https://github.com/ghulette/ocaml-monad/issues"
 dev-repo: "git+https://github.com/ghulette/ocaml-monad.git"
 license: "MIT"
 
-synopsis:
-  "Some simple monad functions for stdlib types."
+synopsis: "Some simple monad functions for stdlib types."
 
 description: """
 Some simple monad functions for stdlib types.
