@@ -2,12 +2,16 @@ module type S = sig
   type 'a t
 
   val return : 'a -> 'a t
+
   val fmap : ('a -> 'b) -> 'a t -> 'b t
   val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+
   val apply : ('a -> 'b) t -> 'a t -> 'b t
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+
   val bind : 'a t -> ('a -> 'b t) -> 'b t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+
   val join : 'a t t -> 'a t
   val sequence : 'a t list -> 'a list t
   val map : ('a -> 'b t) -> 'a list -> 'b list t
