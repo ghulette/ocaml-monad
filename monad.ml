@@ -128,8 +128,8 @@ module type Exist = sig
   type t
 end
 
-module ResultDef (E : Exist) = struct
-  type 'a t = ('a, E.t) result
+module ResultDef (Err : Exist) = struct
+  type 'a t = ('a, Err.t) result
 
   let return x = Ok x
 
@@ -149,4 +149,4 @@ module ResultDef (E : Exist) = struct
     return (f x)
 end
 
-module Result(E:Exist) = MonadF(ResultDef(E))
+module Result(Err:Exist) = MonadF(ResultDef(Err))
