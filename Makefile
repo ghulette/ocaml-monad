@@ -1,7 +1,6 @@
-SOURCES = functor.mli functor.ml \
-          monad.mli monad.ml
-RESULT  = monadlib
+SOURCES = monad.mli monad.ml
+RESULT  = monad
 
 all: byte-code-library native-code-library
 
-include OCamlMakefile
+-include OCamlMakefile

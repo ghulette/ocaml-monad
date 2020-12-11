@@ -1,15 +1,46 @@
-module type S = sig
-  include Functor.S
+module type MonadDef = sig
+  type 'a t
   val return : 'a -> 'a t
+  val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+  val (<*>)  : ('a -> 'b) t -> 'a t -> 'b t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
 end
 
-module Make (M : S) = struct
-  open M
+module type S = sig
+  type 'a t
 
-  let join mmx = 
-    mmx >>= fun mx -> 
-    mx >>= fun x -> 
+  val return : 'a -> 'a t
+  val fmap : ('a -> 'b) -> 'a t -> 'b t
+  val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+  val apply : ('a -> 'b) t -> 'a t -> 'b t
+  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+  val bind : 'a t -> ('a -> 'b t) -> 'b t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val join : 'a t t -> 'a t
+  val sequence : 'a t list -> 'a list t
+  val map : ('a -> 'b t) -> 'a list -> 'b list t
+  val fold : ('a -> 'b -> 'a t) -> 'a -> 'b list -> 'a t
+  val filter : ('a -> bool t) -> 'a list -> 'a list t
+
+  val product : 'a t -> 'b t -> ('a * 'b) t
+
+  module Syntax : sig
+    val ( let* ) : 'a t -> ('a -> 'b t ) -> 'b t (* bind *)
+    val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t (* fmap *)
+    val ( and+ ) : 'a t -> 'b t-> ('a * 'b) t (* product *)
+  end
+end
+
+module MonadF (M : MonadDef) = struct
+  include M
+
+  let fmap = (<$>)
+  let bind = (>>=)
+  let apply = (<*>)
+
+  let join mmx =
+    mmx >>= fun mx ->
+    mx >>= fun x ->
     return x
 
   let rec sequence = function
@@ -19,7 +50,7 @@ module Make (M : S) = struct
        sequence ms >>= fun xs ->
        return (x::xs)
 
-  let map f xs = 
+  let map f xs =
     sequence (List.map f xs)
 
   let rec fold f x = function
@@ -30,29 +61,65 @@ module Make (M : S) = struct
 
   let rec filter p = function
     | [] -> return []
-    | x::xs -> 
+    | x::xs ->
        p x >>= fun flg ->
        filter p xs >>= fun xs' ->
        return (if flg then x::xs' else xs')
+
+  let product xa ya = return (fun x y -> (x, y)) <*> xa <*> ya
+
+  module Syntax = struct
+    let ( let+ ) x f = fmap f x
+    let ( and+ ) o1 o2 = product o1 o2
+    let ( let* ) x f = bind x f
+  end
 end
 
-module Option = struct
-  include Functor.Option
+module OptionDef = struct
+  type 'a t = 'a option
+
   let return x = Some x
-  let (>>=) m f = 
+
+  let (<$>) f = function
+    | None -> None
+    | Some x -> Some (f x)
+
+  let (>>=) m f =
     match m with
     | Some x -> f x
     | None -> None
+
+  let (<*>) fo xo =
+    match fo, xo with
+    | Some f, Some x  -> Some (f x)
+    | _               -> None
 end
 
-module List = struct
-  include Functor.List
+module Option = MonadF (OptionDef)
+
+module ListDef = struct
+  type 'a t = 'a list
   let return x = [x]
-  let (>>=) m f = List.map f m |> List.concat
+  let (<$>) = List.map
+  let (>>=) m f = List.concat_map f m
+
+  let (<*>) fs xs =
+    fs >>= fun f ->
+    xs >>= fun x ->
+    return (f x)
 end
 
-module Lazy = struct
-  include Functor.Lazy
+module List = MonadF (ListDef)
+
+module LazyDef = struct
+  type 'a t = 'a Lazy.t
   let return x = lazy x
+  let (<$>) f x = lazy (f (Lazy.force x))
   let (>>=) m f = lazy (Lazy.force (f (Lazy.force m)))
+  let (<*>) lf lx =
+    lf >>= fun f ->
+    lx >>= fun x ->
+    return (f x)
 end
+
+module Lazy = MonadF(LazyDef)
