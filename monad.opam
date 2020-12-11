@@ -1,0 +1,28 @@
+opam-version: "2.0"
+
+maintainer: ["Geoff Hulette <geoff@hulette.net>"]
+authors: ["Geoff Hulette <geoff@hulette.net>"]
+homepage: "https://github.com/ghulette/ocaml-monad"
+bug-reports: "https://github.com/ghulette/ocaml-monad/issues"
+dev-repo: "git+https://github.com/ghulette/ocaml-monad.git"
+license: "MIT"
+
+synopsis:
+  "Some simple monad functions for stdlib types."
+
+description: """
+Some simple monad functions for stdlib types.
+
+"""
+
+build: [
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+  ["dune" "build" "-p" name "@doc"] {with-doc}
+]
+
+depends: [
+  "dune" {>= "1.10"}
+  "ocaml" {>= "4.08.0"}
+]

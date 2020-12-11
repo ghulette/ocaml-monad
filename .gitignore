@@ -1,10 +1,1 @@
-._bcdi/
-._d/
-._ncdi/
-*.cmi
-*.cmo
-*.cmx
-*.o
-*.a
-*.cma
-*.cmxa
+_build/**
