@@ -32,6 +32,7 @@ end
 
 module Option : S with type 'a t := 'a option
 module List : S with type 'a t := 'a list
+module Seq : S with type 'a t := 'a Seq.t
 module Lazy : S with type 'a t := 'a Lazy.t
 
 module Result (Err : Exist) : sig

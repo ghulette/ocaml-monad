@@ -160,3 +160,19 @@ module Result(Err:Exist) = struct
     | Ok x -> Ok x
     | Error err -> f err
 end
+
+module SeqDef = struct
+  type 'a t = 'a Seq.t
+
+  let return x = Seq.return x
+  let (<$>) f m = Seq.map f m
+
+  let (>>=) m f = Seq.flat_map f m
+
+  let (<*>) lf lx =
+    lf >>= fun f ->
+    lx >>= fun x ->
+    return (f x)
+end
+
+module Seq = MonadF(SeqDef)
