@@ -147,6 +147,16 @@ module ResultDef (Err : Exist) = struct
     lf >>= fun f ->
     lx >>= fun x ->
     return (f x)
+
 end
 
-module Result(Err:Exist) = MonadF(ResultDef(Err))
+module Result(Err:Exist) = struct
+  include MonadF(ResultDef(Err))
+
+  let throw err = Error err
+
+  let catch m f =
+    match m with
+    | Ok x -> Ok x
+    | Error err -> f err
+end
