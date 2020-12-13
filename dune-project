@@ -1,1 +1,2 @@
-(lang dune 2.7)
+(lang dune 1.10)
+(name simple-monad)
