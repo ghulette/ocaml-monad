@@ -12,10 +12,12 @@ module type S = sig
   val return : 'a -> 'a t
   val fmap : ('a -> 'b) -> 'a t -> 'b t
   val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+  val (>>|) : 'a t -> ('a -> 'b) -> 'b t
   val apply : ('a -> 'b) t -> 'a t -> 'b t
   val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
   val bind : 'a t -> ('a -> 'b t) -> 'b t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (>>) : 'a t -> 'b t -> 'b t
   val join : 'a t t -> 'a t
   val sequence : 'a t list -> 'a list t
   val map : ('a -> 'b t) -> 'a list -> 'b list t
@@ -26,6 +28,7 @@ module type S = sig
 
   module Syntax : sig
     val ( let* ) : 'a t -> ('a -> 'b t ) -> 'b t (* bind *)
+    val ( and* ) : 'a t -> 'b t-> ('a * 'b) t (* product *)
     val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t (* fmap *)
     val ( and+ ) : 'a t -> 'b t-> ('a * 'b) t (* product *)
   end
@@ -34,9 +37,13 @@ end
 module MonadF(M : MonadDef) = struct
   include M
 
-  let fmap = (<$>)
   let bind = (>>=)
+  let fmap = (<$>)
+  let (>>|) x f = f <$> x
   let apply = (<*>)
+
+  let (>>) f g =
+    f >>= fun _ -> g
 
   let join mmx =
     mmx >>= fun mx ->
@@ -72,6 +79,7 @@ module MonadF(M : MonadDef) = struct
     let ( let+ ) x f = fmap f x
     let ( and+ ) o1 o2 = product o1 o2
     let ( let* ) x f = bind x f
+    let ( and* ) o1 o2 = product o1 o2
   end
 end
 
@@ -124,11 +132,11 @@ end
 
 module Lazy = MonadF(LazyDef)
 
-module type Exist = sig
+module type EX = sig
   type t
 end
 
-module ResultDef (Err : Exist) = struct
+module ResultDef (Err : EX) = struct
   type 'a t = ('a, Err.t) result
 
   let return x = Ok x
@@ -150,7 +158,7 @@ module ResultDef (Err : Exist) = struct
 
 end
 
-module Result(Err:Exist) = struct
+module Result(Err:EX) = struct
   include MonadF(ResultDef(Err))
 
   let throw err = Error err
