@@ -184,3 +184,25 @@ module SeqDef = struct
 end
 
 module Seq = MonadF(SeqDef)
+
+module ReaderDef (Env:EX) = struct
+  type 'a t = Env.t -> 'a
+
+  let return x = fun _ -> x
+  let (<$>) f m = fun e -> f (m e)
+
+  let (>>=) m f = fun e ->
+    let x = m e in
+    f x e
+
+  let (<*>) lf lx =
+    lf >>= fun f ->
+    lx >>= fun x ->
+    return (f x)
+end
+
+module Reader (Env:EX) = struct
+  include MonadF(ReaderDef(Env))
+
+  let get = fun e -> e
+end
