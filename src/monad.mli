@@ -16,7 +16,7 @@ module type S = sig
 
   val join : 'a t t -> 'a t
   val sequence : 'a t list -> 'a list t
-  val map : ('a -> 'b t) -> 'a list -> 'b list t
+  val sequence_map : ('a -> 'b t) -> 'a list -> 'b list t
   val fold : ('a -> 'b -> 'a t) -> 'a -> 'b list -> 'a t
   val filter : ('a -> bool t) -> 'a list -> 'a list t
   val product : 'a t -> 'b t -> ('a * 'b) t
@@ -46,5 +46,5 @@ end
 
 module Reader (Env : EX) : sig
   include S with type 'a t = Env.t -> 'a
-  val get : Env.t t
+  val ask : Env.t t
 end
