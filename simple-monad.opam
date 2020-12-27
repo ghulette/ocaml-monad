@@ -10,8 +10,8 @@ license: "MIT"
 synopsis: "Some simple monad functions for stdlib types"
 
 description: """
-Some simple monad functions for stdlib types.
-
+Some simple monad functions for stdlib types. Nothing fancy, just some
+boilerplate I end up rewriting all the time.
 """
 
 build: [

@@ -2,17 +2,16 @@ module type S = sig
   type 'a t
 
   val return : 'a -> 'a t
-
-  val fmap : ('a -> 'b) -> 'a t -> 'b t
-  val (<$>) : ('a -> 'b) -> 'a t -> 'b t
-  val (>>|) : 'a t -> ('a -> 'b) -> 'b t
-
+  val map : ('a -> 'b) -> 'a t -> 'b t
   val apply : ('a -> 'b) t -> 'a t -> 'b t
-  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
-
   val bind : 'a t -> ('a -> 'b t) -> 'b t
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  val (>>) : 'a t -> 'b t -> 'b t
+
+  (* Infix operators *)
+  val (<$>) : ('a -> 'b) -> 'a t -> 'b t (* fmap *)
+  val (>>|) : 'a t -> ('a -> 'b) -> 'b t (* fmap with args reversed *)
+  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t (* apply *)
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t (* bind *)
+  val (>>) : 'a t -> 'b t -> 'b t (* bind and ignore first result *)
 
   val join : 'a t t -> 'a t
   val sequence : 'a t list -> 'a list t
@@ -29,7 +28,7 @@ module type S = sig
   end
 end
 
-module type EX = sig
+module type Exists = sig
   type t
 end
 
@@ -38,13 +37,8 @@ module List : S with type 'a t = 'a list
 module Seq : S with type 'a t = 'a Seq.t
 module Lazy : S with type 'a t = 'a Lazy.t
 
-module Result (Err : EX) : sig
+module Result (Err : Exists) : sig
   include S with type 'a t = ('a, Err.t) result
   val throw : Err.t -> ('a, Err.t) result
   val catch : ('a, Err.t) result -> (Err.t -> ('a, Err.t) result) -> ('a, Err.t) result
-end
-
-module Reader (Env : EX) : sig
-  include S with type 'a t = Env.t -> 'a
-  val ask : Env.t t
 end
