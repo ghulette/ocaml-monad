@@ -1,17 +1,33 @@
 module type S = sig
+
+  (** Monad functor type *)
   type 'a t
+
+  (** {1 Basic definitions} *)
 
   val return : 'a -> 'a t
   val map : ('a -> 'b) -> 'a t -> 'b t
   val apply : ('a -> 'b) t -> 'a t -> 'b t
   val bind : 'a t -> ('a -> 'b t) -> 'b t
 
-  (* Infix operators *)
-  val (<$>) : ('a -> 'b) -> 'a t -> 'b t (* fmap *)
-  val (>>|) : 'a t -> ('a -> 'b) -> 'b t (* fmap with args reversed *)
-  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t (* apply *)
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t (* bind *)
-  val (>>) : 'a t -> 'b t -> 'b t (* bind and ignore first result *)
+  (** {1 Infix operators} *)
+
+  (** Infix {!map}. *)
+  val (<$>) : ('a -> 'b) -> 'a t -> 'b t
+
+  (** Infix {!map} with arguments reversed. *)
+  val (>>|) : 'a t -> ('a -> 'b) -> 'b t
+
+  (** Infix {!apply}. *)
+  val (<*>) : ('a -> 'b) t -> 'a t -> 'b t
+
+  (** Infix {!bind}. *)
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+
+  (** Infix {!bind} but ignoring the first result. *)
+  val (>>) : 'a t -> 'b t -> 'b t
+
+  (** {1 Derived functions} *)
 
   val join : 'a t t -> 'a t
   val sequence : 'a t list -> 'a list t
@@ -20,10 +36,19 @@ module type S = sig
   val filter : ('a -> bool t) -> 'a list -> 'a list t
   val product : 'a t -> 'b t -> ('a * 'b) t
 
+  (** Binding operators *)
   module Syntax : sig
-    val ( let* ) : 'a t -> ('a -> 'b t ) -> 'b t (* bind *)
+
+    (** Binding operator for {!bind}. *)
+    val ( let* ) : 'a t -> ('a -> 'b t ) -> 'b t
+
+    (** Binding operator for {!product}. *)
     val ( and* ) : 'a t -> 'b t-> ('a * 'b) t (* product *)
+
+    (** Binding operator for {!map}. *)
     val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t (* fmap *)
+
+    (** Binding operator for {!product}. *)
     val ( and+ ) : 'a t -> 'b t-> ('a * 'b) t (* product *)
   end
 end
