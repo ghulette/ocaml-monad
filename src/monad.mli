@@ -30,10 +30,16 @@ module type S = sig
   (** {1 Derived functions} *)
 
   val join : 'a t t -> 'a t
+
   val sequence : 'a t list -> 'a list t
+
+  (** In Haskell this is called [mapM]. *)
   val sequence_map : ('a -> 'b t) -> 'a list -> 'b list t
+
   val fold : ('a -> 'b -> 'a t) -> 'a -> 'b list -> 'a t
+
   val filter : ('a -> bool t) -> 'a list -> 'a list t
+
   val product : 'a t -> 'b t -> ('a * 'b) t
 
   (** Binding operators *)
