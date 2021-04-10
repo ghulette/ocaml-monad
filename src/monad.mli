@@ -63,13 +63,13 @@ module type Exists = sig
   type t
 end
 
-module Option : S with type 'a t = 'a option
-module List : S with type 'a t = 'a list
-module Seq : S with type 'a t = 'a Seq.t
-module Lazy : S with type 'a t = 'a Lazy.t
+module Option : S with type 'a t := 'a option
+module List : S with type 'a t := 'a list
+module Seq : S with type 'a t := 'a Seq.t
+module Lazy : S with type 'a t := 'a Lazy.t
 
 module Result (Err : Exists) : sig
-  include S with type 'a t = ('a, Err.t) result
+  include S with type 'a t := ('a, Err.t) result
   val throw : Err.t -> ('a, Err.t) result
   val catch : ('a, Err.t) result -> (Err.t -> ('a, Err.t) result) -> ('a, Err.t) result
 end
